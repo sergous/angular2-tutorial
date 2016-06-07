@@ -34,7 +34,7 @@ describe('AppComponent with TCB', function () {
     });
   })));
 
-  it('should have expected <h1> text',
+  1it('should have expected <h1> text',
     async(inject([TestComponentBuilder], (tcb: TestComponentBuilder) => {
 
       tcb.createAsync(AppComponent).then(fixture => {
@@ -44,7 +44,7 @@ describe('AppComponent with TCB', function () {
 
           h1 = fixture.debugElement.query(By.css('h1')).nativeElement;            // preferred
 
-      expect(h1.innerText).toMatch(/angular 2 app/i, '<h1> should say something about "Angular 2 App"');
+      expect(h1.innerText).toMatch(/Tour of Heroes/i, '<h1> should say something about "Tour of Heroes"');
     });
 
   })));
