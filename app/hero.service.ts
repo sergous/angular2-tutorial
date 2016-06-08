@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import {Hero} from "./hero";
+import { Http, Headers } from '@angular/http';
 import 'rxjs/add/operator/toPromise';
-import { Http, Response } from '@angular/http';
+import {Hero} from "./hero";
 
 @Injectable()
 export class HeroService {
@@ -9,48 +9,6 @@ export class HeroService {
     constructor (private http: Http) {}
 
     private heroesUrl = 'app/heroes'; // URL to the web api
-
-    private handleError(error: any) {
-        console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }
-
-    // Update existing Hero
-    private put(hero: Hero) {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        let url = '${this.heroesUrl}/${hero.id}';
-
-        return this.http
-            .put(url, JSON.stringify(hero), {headers: headers})
-            .toPromise()
-            .then(() => hero)
-            .catch(this.handleError);
-    }
-
-    // Delete existing Hero
-    delete(hero: Hero) {
-        let headers = new Headers();
-        headers.append('Content-Type', 'application/json');
-
-        let url = '${this.heroesUrl}/${hero.id}';
-
-        return this.http
-            .delete(url, headers)
-            .toPromise()
-            .catch(this.handleError);
-    }
-
-    save() {
-        this.heroService
-            .save(this.hero)
-            .then(hero => {
-                this.hero = hero; // saved hero, w/ id if new
-                this.goBack(hero);
-            })
-            .catch(error => this.error = error); // TODO: Display error message
-    }
 
     getHeroes(): Promise<Hero[]> {
         return this.http.get(this.heroesUrl)
@@ -65,8 +23,54 @@ export class HeroService {
             .then(heroes => heroes.filter(hero => hero.id === id)[0]);
     }
 
-    goBack(savedHero: Hero = null) {
-        this.close.emit(savedHero);
-        if (this.navigated) { window.history.back(); }
+    save(hero: Hero): Promise<Hero> {
+        if (hero.id) {
+            return this.put(hero);
+        }
+        return this.post(hero);
+    }
+
+    // Delete existing Hero
+    delete(hero: Hero) {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        let url = this.heroesUrl + '/' + hero.id;
+        return this.http
+            .delete(url, headers)
+            .toPromise()
+            .catch(this.handleError);
+    }
+
+    // Add new Hero
+    private post(hero: Hero): Promise<Hero> {
+        let headers = new Headers({
+            'Content-Type': 'application/json'
+        });
+
+        return this.http
+            .post(this.heroesUrl, JSON.stringify(hero), {headers: headers})
+            .toPromise()
+            .then(res => res.json().data)
+            .catch(this.handleError);
+    }
+
+    // Update existing Hero
+    private put(hero: Hero) {
+        let headers = new Headers();
+        headers.append('Content-Type', 'application/json');
+
+        let url = this.heroesUrl + '/' + hero.id;
+
+        return this.http
+            .put(url, JSON.stringify(hero), {headers: headers})
+            .toPromise()
+            .then(() => hero)
+            .catch(this.handleError);
+    }
+
+    private handleError(error: any) {
+        console.error('An error occurred', error);
+        return Promise.reject(error.message || error);
     }
 }
